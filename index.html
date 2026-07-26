@@ -6,6 +6,9 @@
   <title>Sonatris Limited — Software Development</title>
   <meta name="description" content="Sonatris Limited is a software development company building mobile applications, including TOEIC Coach." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎧</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -28,7 +31,7 @@
     <section class="hero">
       <div class="container hero-inner">
         <p class="eyebrow">Software Development Studio</p>
-        <h1>We build mobile apps that help people learn.</h1>
+        <h1>We build mobile apps that help people <span class="grad">learn</span>.</h1>
         <p class="lead">
           Sonatris Limited designs and develops focused, high-quality mobile
           applications. Our flagship app, TOEIC Coach, helps learners prepare
@@ -38,6 +41,20 @@
           <a class="btn btn-primary" href="#apps">Explore our apps</a>
           <a class="btn btn-ghost" href="#contact">Get in touch</a>
         </div>
+        <div class="stats">
+          <div class="stat">
+            <strong>0</strong>
+            <span>Personal data collected</span>
+          </div>
+          <div class="stat">
+            <strong>iOS &amp; Android</strong>
+            <span>Mobile native</span>
+          </div>
+          <div class="stat">
+            <strong>Indie</strong>
+            <span>Independent studio</span>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -46,21 +63,23 @@
         <h2>Our Apps</h2>
         <p class="section-intro">Purpose-built tools, crafted with care.</p>
         <div class="cards">
-          <article class="card">
+          <article class="card reveal">
             <div class="card-icon">🎧</div>
             <h3>TOEIC Coach</h3>
             <p>
               A mobile companion for TOEIC preparation. Practice at your own
               pace, anywhere — no account, no personal data required.
             </p>
+            <span class="card-tag">Available now</span>
           </article>
-          <article class="card">
+          <article class="card reveal">
             <div class="card-icon">🚀</div>
             <h3>More on the way</h3>
             <p>
               We are continually developing new applications. Stay tuned for
               future releases from our studio.
             </p>
+            <span class="card-tag">In development</span>
           </article>
         </div>
       </div>
@@ -70,7 +89,7 @@
       <div class="container">
         <h2>What we care about</h2>
         <div class="cards">
-          <article class="card">
+          <article class="card reveal">
             <div class="card-icon">🔒</div>
             <h3>Privacy first</h3>
             <p>
@@ -78,7 +97,7 @@
               process personal information from our users.
             </p>
           </article>
-          <article class="card">
+          <article class="card reveal">
             <div class="card-icon">✨</div>
             <h3>Quality craft</h3>
             <p>
@@ -86,7 +105,7 @@
               they simply work.
             </p>
           </article>
-          <article class="card">
+          <article class="card reveal">
             <div class="card-icon">📱</div>
             <h3>Mobile native</h3>
             <p>
@@ -104,13 +123,15 @@
         <p class="section-intro">
           Questions about our apps or company? We would love to hear from you.
         </p>
-        <ul class="contact-list">
-          <li><strong>Company:</strong> Sonatris Limited</li>
-          <li>
-            <strong>Email:</strong>
-            <a href="mailto:Sonatris.studio@gmail.com">Sonatris.studio@gmail.com</a>
-          </li>
-        </ul>
+        <div class="contact-card reveal">
+          <ul class="contact-list">
+            <li><strong>Company:</strong> Sonatris Limited</li>
+            <li>
+              <strong>Email:</strong>
+              <a href="mailto:Sonatris.studio@gmail.com">Sonatris.studio@gmail.com</a>
+            </li>
+          </ul>
+        </div>
       </div>
     </section>
   </main>
@@ -127,6 +148,30 @@
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Shadow the sticky header once the page scrolls.
+    var header = document.querySelector('.site-header');
+    var onScroll = function () {
+      header.classList.toggle('is-stuck', window.scrollY > 8);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // Fade cards in as they enter the viewport.
+    var revealables = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry, i) {
+          if (!entry.isIntersecting) return;
+          entry.target.style.transitionDelay = (i * 80) + 'ms';
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        });
+      }, { rootMargin: '0px 0px -10% 0px' });
+      revealables.forEach(function (el) { observer.observe(el); });
+    } else {
+      revealables.forEach(function (el) { el.classList.add('is-visible'); });
+    }
   </script>
 </body>
 </html>
