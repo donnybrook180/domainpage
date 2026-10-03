@@ -424,6 +424,8 @@ h1 .grad {
   scroll-margin-top: 90px;
 }
 .prose p { margin: 0 0 16px; color: var(--text); }
+.prose ul:not(.contact-list) { margin: 0 0 16px; padding-left: 22px; }
+.prose ul:not(.contact-list) li { margin-bottom: 6px; }
 .prose .contact-list { margin-top: 18px; }
 .prose .contact-list li { color: var(--text); }
 
