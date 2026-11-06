@@ -8,7 +8,8 @@
     The join page for shared files: My Pregnancy's partner sharing, My
     Medicines' carer sharing and Baby Tracker's family sharing. Host it as a static page (e.g. GitHub Pages)
     at PARTNER_JOIN_URL / SHARE_JOIN_URL. The invite link is
-    <this page>?app=<pregnancy|medicine|baby>&f=<fileId> (no app: pregnancy).
+    <this page>?app=<pregnancy|medicine|baby>&f=<fileId> (no app: pregnancy;
+    no app and no file: a neutral "Open your invite").
 
     The app uses the drive.file scope, so it can only open a file the
     other person picked here once in the Google file picker. The picker
@@ -42,22 +43,23 @@
     button.secondary, .button.secondary { background: transparent; color: var(--accent-dark); border: 2px solid var(--accent); margin-top: 12px; }
     button:disabled { opacity: .5; }
     #error { color: #b3261e; display: none; }
+    [hidden] { display: none !important; }
   </style>
 </head>
 <body>
 <main>
   <div class="card">
-    <div id="emoji" style="font-size:48px">🤍</div>
-    <h1 id="title">Join the shared pregnancy</h1>
-    <p id="intro">Your partner invited you to follow along in My Pregnancy. You'll see the week, the baby's journey, appointments, checklists and baby names.</p>
-    <ol>
+    <div id="emoji" style="font-size:48px">🔗</div>
+    <h1 id="title">Open your invite</h1>
+    <p id="intro">This page opens invites to a shared baby, pregnancy or medicine list. Open the invite link you were sent; it brings you right back here with everything filled in.</p>
+    <ol id="steps" hidden>
       <li>Install <span class="name">My Pregnancy</span> if you haven't yet.</li>
       <li>Sign in with the Google account the invite was sent to.</li>
       <li>Tap <b>Select</b> on the shared file. That's the only file the app can open.</li>
     </ol>
     <p id="error"></p>
-    <button id="join" disabled>Sign in and join</button>
-    <a id="install" class="button secondary" href="https://play.google.com/store/apps/details?id=com.sonatris.pregnancy_tracker">Install <span class="name">My Pregnancy</span></a>
+    <button id="join" disabled hidden>Sign in and join</button>
+    <a id="install" hidden class="button secondary" href="https://play.google.com/store/apps/details?id=com.sonatris.pregnancy_tracker">Install <span class="name">My Pregnancy</span></a>
   </div>
 </main>
 <script>
@@ -93,9 +95,16 @@
     },
   };
   const params = new URLSearchParams(location.search);
-  const app = APPS[params.get('app')] || APPS.pregnancy;
-  const PACKAGE = app.package;
   const fileId = params.get('f');
+  // My Pregnancy's invite links have no app= (they came first). Without an
+  // app and a file, the page stays on "Open your invite".
+  const app = APPS[params.get('app')] || (fileId ? APPS.pregnancy : null);
+  if (!app) {
+    window.gisLoaded = window.gapiLoaded = () => {};
+    throw new Error('no invite in this link');
+  }
+  const PACKAGE = app.package;
+  for (const id of ['steps', 'join', 'install']) document.getElementById(id).hidden = false;
 
   document.title = app.title;
   document.getElementById('emoji').textContent = app.emoji;
