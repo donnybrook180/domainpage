@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Join a share</title>
+  <!--
+    The join page for shared files: My Pregnancy's partner sharing, My
+    Medicines' carer sharing and Baby Tracker's family sharing. Host it as a static page (e.g. GitHub Pages)
+    at PARTNER_JOIN_URL / SHARE_JOIN_URL. The invite link is
+    <this page>?app=<pregnancy|medicine|baby>&f=<fileId> (no app: pregnancy).
+
+    The app uses the drive.file scope, so it can only open a file the
+    other person picked here once in the Google file picker. The picker
+    shows only the shared file; then the page returns to the app with
+    <scheme>://join?f=<fileId>.
+
+    Each app has its own Google Cloud project (so the sign-in screen shows
+    that app's name and logo). Fill in per app, in APPS below, from the
+    project that the app's sign-in uses:
+      clientId  OAuth client id of type "Web application", with this page's
+                origin under "Authorized JavaScript origins" (the same id as
+                GOOGLE_SERVER_CLIENT_ID in release/<app>.json)
+      apiKey    API key restricted to the Google Picker API and this origin
+      appId     the project number
+    The picker grants drive.file access to the project given by appId, so it
+    must be the app's own project or the app can't open the picked file.
+  -->
+  <style>
+    :root { --bg: #fbf6f1; --card: #ffffff; --text: #3d3330; --muted: #7a6d68; --accent: #8fae9a; --accent-dark: #5f8a6f; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #1f1b1a; --card: #2a2524; --text: #f3ece8; --muted: #b8aca6; --accent: #8fae9a; --accent-dark: #a9c8b3; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 440px; margin: 0 auto; padding: 32px 16px; }
+    .card { background: var(--card); border-radius: 20px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    h1 { font-size: 1.5rem; margin: 0 0 8px; }
+    p { margin: 0 0 16px; color: var(--muted); }
+    ol { padding-inline-start: 20px; color: var(--muted); }
+    button, .button { display: block; width: 100%; padding: 14px; border: 0; border-radius: 999px; background: var(--accent-dark); color: #fff; font: inherit; font-weight: 700; text-align: center; text-decoration: none; cursor: pointer; }
+    button.secondary, .button.secondary { background: transparent; color: var(--accent-dark); border: 2px solid var(--accent); margin-top: 12px; }
+    button:disabled { opacity: .5; }
+    #error { color: #b3261e; display: none; }
+  </style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <div id="emoji" style="font-size:48px">🤍</div>
+    <h1 id="title">Join the shared pregnancy</h1>
+    <p id="intro">Your partner invited you to follow along in My Pregnancy. You'll see the week, the baby's journey, appointments, checklists and baby names.</p>
+    <ol>
+      <li>Install <span class="name">My Pregnancy</span> if you haven't yet.</li>
+      <li>Sign in with the Google account the invite was sent to.</li>
+      <li>Tap <b>Select</b> on the shared file. That's the only file the app can open.</li>
+    </ol>
+    <p id="error"></p>
+    <button id="join" disabled>Sign in and join</button>
+    <a id="install" class="button secondary" href="https://play.google.com/store/apps/details?id=com.sonatris.pregnancy_tracker">Install <span class="name">My Pregnancy</span></a>
+  </div>
+</main>
+<script>
+  const SCOPE = 'https://www.googleapis.com/auth/drive.file';
+
+  const APPS = {
+    pregnancy: {
+      name: 'My Pregnancy', scheme: 'pregnancy', package: 'com.sonatris.pregnancy_tracker', emoji: '🤍',
+      title: 'Join the shared pregnancy',
+      intro: "Your partner invited you to follow along in My Pregnancy. You'll see the week, the baby's journey, appointments, checklists and baby names.",
+      who: 'your partner',
+      clientId: 'YOUR_PREGNANCY_WEB_CLIENT_ID.apps.googleusercontent.com',
+      apiKey: 'YOUR_PREGNANCY_PICKER_API_KEY',
+      appId: 'YOUR_PREGNANCY_PROJECT_NUMBER',
+    },
+    medicine: {
+      name: 'My Medicines', scheme: 'medicine', package: 'com.sonatris.medicine_tracker', emoji: '💊',
+      title: 'Follow shared medicines',
+      intro: "Someone invited you to follow their medicines in My Medicines. You'll both see the medicines, the doses taken and the stock, and both can change them.",
+      who: 'the person who invited you',
+      clientId: 'YOUR_MEDICINE_WEB_CLIENT_ID.apps.googleusercontent.com',
+      apiKey: 'YOUR_MEDICINE_PICKER_API_KEY',
+      appId: 'YOUR_MEDICINE_PROJECT_NUMBER',
+    },
+    baby: {
+      name: 'Baby Tracker', scheme: 'baby', package: 'com.sonatris.baby_tracker', emoji: '🍼',
+      title: 'Join the shared baby',
+      intro: "You've been invited to follow a baby in Baby Tracker. You'll see the feeds, sleep, diapers and growth, and can log them too.",
+      who: 'the person who invited you',
+      clientId: '29522439533-55f5q2u5blleeh853cut7fqqimqpsdno.apps.googleusercontent.com',
+      apiKey: 'AIzaSyDQ7sC6xC4guWAu9UNyyQjHbNCJwGya55U',
+      appId: '29522439533',
+    },
+  };
+  const params = new URLSearchParams(location.search);
+  const app = APPS[params.get('app')] || APPS.pregnancy;
+  const PACKAGE = app.package;
+  const fileId = params.get('f');
+
+  document.title = app.title;
+  document.getElementById('emoji').textContent = app.emoji;
+  document.getElementById('title').textContent = app.title;
+  document.getElementById('intro').textContent = app.intro;
+  document.querySelectorAll('.name').forEach((e) => { e.textContent = app.name; });
+  document.getElementById('install').href = 'https://play.google.com/store/apps/details?id=' + PACKAGE;
+  const join = document.getElementById('join');
+  const error = document.getElementById('error');
+
+  function fail(message) {
+    error.textContent = message;
+    error.style.display = 'block';
+  }
+
+  // Android opens the app through an intent link, or the Play Store when
+  // it isn't installed.
+  function openApp(id) {
+    const query = 'join?f=' + encodeURIComponent(id);
+    if (/Android/i.test(navigator.userAgent)) {
+      const store = 'https://play.google.com/store/apps/details?id=' + PACKAGE;
+      location.href = 'intent://' + query + '#Intent;scheme=' + app.scheme + ';package=' + PACKAGE +
+        ';S.browser_fallback_url=' + encodeURIComponent(store) + ';end';
+    } else {
+      location.href = app.scheme + '://' + query;
+    }
+  }
+
+  let gisReady = false, pickerReady = false;
+  function ready() {
+    if (gisReady && pickerReady && fileId) join.disabled = false;
+  }
+  if (!fileId) fail('This link is incomplete. Ask ' + app.who + ' to send the invite again.');
+
+  window.gisLoaded = () => { gisReady = true; ready(); };
+  window.gapiLoaded = () => gapi.load('picker', () => { pickerReady = true; ready(); });
+
+  join.addEventListener('click', () => {
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: app.clientId,
+      scope: SCOPE,
+      callback: (response) => {
+        if (response.error) return fail('Sign-in did not work. Please try again.');
+        showPicker(response.access_token);
+      },
+    });
+    client.requestAccessToken({ prompt: 'select_account' });
+  });
+
+  function showPicker(token) {
+    const view = new google.picker.DocsView(google.picker.ViewId.DOCS).setFileIds(fileId).setMode(google.picker.DocsViewMode.LIST);
+    const picker = new google.picker.PickerBuilder()
+      .setAppId(app.appId)
+      .setDeveloperKey(app.apiKey)
+      .setOAuthToken(token)
+      .addView(view)
+      .enableFeature(google.picker.Feature.NAV_HIDDEN)
+      .setCallback((data) => {
+        const action = data[google.picker.Response.ACTION];
+        if (action === google.picker.Action.PICKED) {
+          openApp(data[google.picker.Response.DOCUMENTS][0][google.picker.Document.ID]);
+        } else if (action === google.picker.Action.CANCEL) {
+          fail("No file was selected. If the list was empty, sign in with the Google account the invite was sent to.");
+        }
+      })
+      .build();
+    picker.setVisible(true);
+  }
+</script>
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+</body>
+</html>
